@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"log"
-	"os"
 )
 
 type Version struct {
@@ -14,9 +11,6 @@ type Version struct {
 
 type Author struct {
 	names []string
-	//First  string
-	//Middle string
-	//Last   string
 }
 
 type ArxivPaper struct {
@@ -42,33 +36,6 @@ type ArxivPapers struct {
 
 // https://www.golinuxcloud.com/golang-json-unmarshal/
 func (p *ArxivPapers) ReadFile(filename string) {
-	p.items = []ArxivPaper{}
-
-	jsonfile, err := os.Open(filename)
-	if err != nil {
-		log.Printf("[WARN]Cannot open file: %s: %v\n", filename, err)
-		return
-	}
-
-	defer jsonfile.Close()
-	bytes, err := ioutil.ReadAll(jsonfile)
-	if err != nil {
-		log.Printf("[WARN]Cannot read file: %s: %v\n", filename, err)
-		return
-	}
-	arr := []ArxivPaper{}
-
-	err = json.Unmarshal(bytes, &arr)
-	if err != nil {
-		log.Printf("[WARN]Cannot unmarshal file: %s: %v\n", filename, err)
-		return
-	}
-
-	p.items = append(p.items, arr...)
-}
-
-// https://www.golinuxcloud.com/golang-json-unmarshal/
-func (p *ArxivPapers) ReadFile2(filename string) {
 	js, err := parseFile(filename)
 	if err != nil {
 		log.Printf("[WARN]Cannot open file: %s: %v\n", filename, err)
