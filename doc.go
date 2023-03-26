@@ -53,7 +53,7 @@ type ArxivPaper struct {
 }
 
 type ArxivPapers struct {
-	items []ArxivPaper
+	items []*ArxivPaper
 }
 
 // https://www.golinuxcloud.com/golang-json-unmarshal/
@@ -70,18 +70,24 @@ func (p *ArxivPapers) ReadFile(filename string) {
 
 func (p *ArxivPapers) convert(jc *JsonContent) {
 	content := jc.Data
-	papers := []*ArxivPaper{}
 	arr := content.([]interface{})
 	for _, v := range arr {
 		paper := convPaper(v)
 		if paper != nil {
-			papers = append(papers, paper)
+			p.AddPaper(paper)
 
 			//log.Printf("[DBG]Add paper: %+v\n", *paper)
 		}
 	}
 	//log.Printf("Content: %v\n", content)
-	log.Printf("Total %d papers.\n", len(papers))
+	log.Printf("Total %d papers.\n", len(p.items))
+}
+
+func (p *ArxivPapers) AddPaper(paper *ArxivPaper) {
+	if paper == nil {
+		return
+	}
+	p.items = append(p.items, paper)
 }
 
 func convPaper(content interface{}) *ArxivPaper {
