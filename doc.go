@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 )
 
 type Version struct {
@@ -53,11 +54,20 @@ type ArxivPaper struct {
 }
 
 type ArxivPapers struct {
-	items []*ArxivPaper
+	items          []*ArxivPaper
+	category2count map[string]int
+	license2count  map[string]int
+}
+
+func (p *ArxivPapers) Init() {
+	p.category2count = make(map[string]int)
+	p.license2count = make(map[string]int)
 }
 
 // https://www.golinuxcloud.com/golang-json-unmarshal/
 func (p *ArxivPapers) ReadFile(filename string) {
+	p.Init()
+
 	js, err := parseFile(filename)
 	if err != nil {
 		log.Printf("[WARN]Cannot open file: %s: %v\n", filename, err)
@@ -79,26 +89,49 @@ func (p *ArxivPapers) convert(jc *JsonContent) {
 			//log.Printf("[DBG]Add paper: %+v\n", *paper)
 		}
 	}
+	p.PrintResults()
 	//log.Printf("Content: %v\n", content)
-	log.Printf("Total %d papers.\n", len(p.items))
+	//log.Printf("Total %d papers.\n", len(p.items))
 }
 
 func (p *ArxivPapers) AddPaper(paper *ArxivPaper) {
 	if paper == nil {
 		return
 	}
-	p.items = append(p.items, paper)
+	allcats := strings.Split(paper.categories, " ")
+	for _, oneCat := range allcats {
+		p.category2count[oneCat] = p.category2count[oneCat] + 1
+	}
+
+	p.license2count[paper.license] = p.license2count[paper.license] + 1
+	//p.items = append(p.items, paper)
+}
+
+const MinPaperCount = 10
+
+func (p *ArxivPapers) PrintResults() {
+	log.Printf("Categories count: %d\n", len(p.category2count))
+	for k, v := range p.category2count {
+		if v >= MinPaperCount {
+			log.Printf("[%s]:%d\n", k, v)
+		}
+	}
+	log.Println("=============================")
+	log.Printf("Licenses count: %d\n", len(p.license2count))
+	for k, v := range p.license2count {
+		log.Printf("[%s]:%d\n", k, v)
+	}
 }
 
 func convPaper(content interface{}) *ArxivPaper {
-	paper := new(ArxivPaper)
+	var paper ArxivPaper
 	varmap := content.(map[string]interface{})
 	for k, v := range varmap {
 		switch k {
 		case "id":
 			paper.id = v.(string)
 		case "submitter":
-			paper.submitter = v.(string)
+			paper.submitter = toNilOrString(v)
 		case "authors":
 			paper.authors = v.(string)
 		case "title":
@@ -127,7 +160,7 @@ func convPaper(content interface{}) *ArxivPaper {
 			log.Printf("[DBG][convPaper]Unknown [%v]:%v\n", k, v)
 		}
 	}
-	return paper
+	return &paper
 }
 
 func convertVersions(content interface{}) *Versions {
