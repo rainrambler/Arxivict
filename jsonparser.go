@@ -117,3 +117,14 @@ func iterContentLayer(content interface{}, layers int) {
 		fmt.Printf("Unknown: %+v\n", otherType)
 	}
 }
+
+func parseLine(jsonline string) (*JsonContent, error) {
+	raw := []byte(jsonline)
+	var data = new(interface{})
+	err := json.Unmarshal(raw, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &JsonContent{*data}, nil
+}
