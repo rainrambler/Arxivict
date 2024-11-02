@@ -5,9 +5,10 @@ import (
 	"strings"
 )
 
+// {"version":"v1","created":"Mon, 2 Apr 2007 19:18:42 GMT"}
 type Version struct {
-	version string `json:"version"`
-	created string `json:"created"`
+	version string
+	created string
 }
 
 type Versions struct {
@@ -49,7 +50,7 @@ type ArxivPaper struct {
 	license        string
 	abstract       string
 	versions       *Versions
-	updatedate     string
+	updatedate     string // "update_date":"2008-11-26"
 	authors_parsed *Authors
 }
 
@@ -58,12 +59,42 @@ type ArxivPapers struct {
 	category2count map[string]int
 	subctg2count   map[string]int
 	license2count  map[string]int
+	key2count      map[string]int
+
+	stat *PaperStatistics
 }
 
 func (p *ArxivPapers) Init() {
 	p.category2count = make(map[string]int)
 	p.subctg2count = make(map[string]int)
 	p.license2count = make(map[string]int)
+	p.key2count = make(map[string]int)
+
+	p.stat = new(PaperStatistics)
+	p.stat.Init()
+}
+
+func (p *ArxivPapers) ParseLargeFile(filename string) {
+	p.Init()
+
+	lines, err := ReadLines(filename)
+	if err != nil {
+		log.Printf("Err: Cannot read file %s: %v\n", filename, err)
+		return
+	}
+
+	for row, line := range lines {
+		content, err := parseLine(line)
+		if err != nil {
+			log.Printf("Err: Cannot read line %d %s: %v\n", row+1,
+				line, err)
+		}
+
+		paper := convPaper(content)
+		if paper != nil {
+			p.AddPaperMeta(paper)
+		}
+	}
 }
 
 // https://www.golinuxcloud.com/golang-json-unmarshal/
@@ -79,19 +110,19 @@ func (p *ArxivPapers) ReadFile(filename string) {
 	p.convert(js)
 }
 
+// Convert json content to papers
 func (p *ArxivPapers) convert(jc *JsonContent) {
 	content := jc.Data
 	arr := content.([]interface{})
 	for _, v := range arr {
 		paper := convPaper(v)
 		if paper != nil {
-			p.AddPaper(paper)
+			p.AddPaperMeta(paper)
 		}
 	}
-	p.PrintResults()
 }
 
-func (p *ArxivPapers) AddPaper(paper *ArxivPaper) {
+func (p *ArxivPapers) AddPaperMeta(paper *ArxivPaper) {
 	if paper == nil {
 		return
 	}
@@ -104,6 +135,21 @@ func (p *ArxivPapers) AddPaper(paper *ArxivPaper) {
 	}
 
 	p.license2count[paper.license] = p.license2count[paper.license] + 1
+
+	arr := strings.Split(paper.title, " ")
+	for _, key := range arr {
+		keynew := PurifyKey(key)
+		if len(keynew) > 0 {
+			p.key2count[keynew] = p.key2count[keynew] + 1
+		}
+	}
+
+	p.stat.AddOnePaper(paper)
+}
+
+func PurifyKey(s string) string {
+	sn := strings.Trim(s, " \t\r\n")
+	return strings.ToLower(sn)
 }
 
 const MinPaperCount = 10
@@ -125,6 +171,8 @@ func (p *ArxivPapers) PrintResults() {
 	for k, v := range p.license2count {
 		log.Printf("%s:%d\n", k, v)
 	}
+
+	PrintMapByValueTop(p.key2count, 10000)
 }
 
 func convPaper(content interface{}) *ArxivPaper {
