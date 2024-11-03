@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -74,14 +76,54 @@ func (p *ArxivPapers) Init() {
 	p.stat.Init()
 }
 
-func (p *ArxivPapers) ParseLargeFile(filename string) {
+func (p *ArxivPapers) ParseLargeFileByLine(filename string) {
 	p.Init()
 
-	lines, err := ReadLinesInLargeFile(filename)
+	f, err := os.Open(filename)
 	if err != nil {
 		log.Printf("Err: Cannot read file %s: %v\n", filename, err)
 		return
 	}
+	defer f.Close()
+
+	buf := []byte{}
+	scanner := bufio.NewScanner(f)
+	scanner.Buffer(buf, 1024*1024)
+
+	totallines := 0
+	for scanner.Scan() {
+		//lines = append(lines, scanner.Text())
+		line := scanner.Text()
+
+		content, err := parseLine(line)
+		if err != nil {
+			log.Printf("Err: Cannot read line %d %s: %v\n", totallines+1,
+				line, err)
+		}
+
+		paper := convPaper(content.Data)
+		if paper != nil {
+			p.AddPaperMeta(paper)
+		} else {
+			log.Printf("INFO: Cannot convert paper on line: %d\n", totallines+1)
+		}
+
+		totallines++
+	}
+
+	log.Printf("INFO: Total %d lines.\n", totallines)
+}
+
+func (p *ArxivPapers) ParseLargeFile(filename string) {
+	p.Init()
+
+	lines, err := ReadLinesLarge(filename)
+	if err != nil {
+		log.Printf("Err: Cannot read file %s: %v\n", filename, err)
+		return
+	}
+
+	log.Printf("INFO: Total %d lines.\n", len(lines))
 
 	for row, line := range lines {
 		content, err := parseLine(line)
