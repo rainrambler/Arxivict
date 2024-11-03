@@ -170,7 +170,7 @@ func (p *Matrix) ToChart() {
 
 	data := map[string]interface{}{
 		"title": map[string]interface{}{
-			"text": "Stacked Line",
+			"text": "Arxiv Statistics",
 		},
 		"tooltip": map[string]interface{}{
 			"trigger": "axis",
