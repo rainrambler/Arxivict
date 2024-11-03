@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 )
@@ -118,4 +119,78 @@ func (p *Matrix) PrintDesc() {
 			fmt.Printf("[%s, %s]:%s\n", rolname, colname, v)
 		}
 	}
+}
+
+func (p *Matrix) ToChart() {
+	//rowsstr := fmt.Sprintf("%+v", p.Rows)
+	//colsstr := fmt.Sprintf("%+v", p.Columns)
+
+	data := map[string]interface{}{
+		"title": map[string]interface{}{
+			"text": "Stacked Line",
+		},
+		"tooltip": map[string]interface{}{
+			"trigger": "axis",
+		},
+		"legend": map[string]interface{}{
+			"data": p.Rows,
+		},
+		"grid": map[string]interface{}{
+			"left":         "3%",
+			"right":        "4%",
+			"bottom":       "3%",
+			"containLabel": true,
+		},
+		"xAxis": map[string]interface{}{
+			"type":        "category",
+			"boundaryGap": false,
+			"data":        p.Columns,
+		},
+		"yAxis": map[string]interface{}{
+			"type": "value",
+		},
+
+		"series": []interface{}{},
+	}
+
+	series1 := map[string]interface{}{
+		"name":  "Email",
+		"type":  "line",
+		"stack": "Total",
+		"data":  "[120, 132, 101, 134, 90, 230, 210]",
+	}
+
+	seriesarr := data["series"].([]interface{})
+
+	seriesarr = append(seriesarr, series1)
+	seriesarr = append(seriesarr, series1)
+
+	data["series"] = seriesarr
+
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		fmt.Printf("could not marshal json: %s\n", err)
+		return
+	}
+
+	fmt.Printf("json data: %s\n", jsonData)
+}
+
+func (p *Matrix) ToChartDemo() {
+	data := map[string]interface{}{
+		"intValue":    1234,
+		"boolValue":   true,
+		"stringValue": "hello!",
+		"objectValue": map[string]interface{}{
+			"arrayValue": []int{1, 2, 3, 4},
+		},
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		fmt.Printf("could not marshal json: %s\n", err)
+		return
+	}
+
+	fmt.Printf("json data: %s\n", jsonData)
 }
