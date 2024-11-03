@@ -2003,31 +2003,6 @@ func (p *CategoryFinder) Init() {
 	p.arxivSubsumed.Init()
 }
 
-func (p *CategoryFinder) FindCategory(name string) {
-	cat, exists := p.arxivCategories.Find(name)
-	if exists {
-		fmt.Printf("Found in category %s: %+v\n", name, *cat)
-
-		arcname := cat.in_archive
-		arc, ex2 := p.arxivArchives.Find(arcname)
-		if ex2 {
-			fmt.Printf("Found in archive %s: %+v\n", arcname, *arc)
-
-			grpname := arc.in_group
-			grp, ex3 := p.arxivGroups.Find(grpname)
-			if ex3 {
-				fmt.Printf("Found in group %s: %+v\n", grpname, *grp)
-			} else {
-				fmt.Printf("Not found in group: %s\n", grpname)
-			}
-		} else {
-			fmt.Printf("Not found in archive: %s\n", arcname)
-		}
-	} else {
-		fmt.Printf("Not found in category: %s\n", name)
-	}
-}
-
 const InvalidName = "N/A"
 
 func (p *CategoryFinder) FindCategory2(name string) {
