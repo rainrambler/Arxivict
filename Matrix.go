@@ -139,7 +139,8 @@ func (p *Matrix) convSeries() []interface{} {
 		series1 := map[string]interface{}{
 			"name": colname,
 			"type": "line",
-			"data": ArrToJsonStr(varr),
+			//"data": ArrToJsonStr(varr),
+			"data": varr,
 		}
 
 		all = append(all, series1)
