@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 )
 
@@ -105,4 +106,16 @@ func (p *Matrix) getValueInner(row, col int) string {
 	}
 
 	return v
+}
+
+func (p *Matrix) PrintDesc() {
+	for i := 0; i < p.MaxCol; i++ {
+		colname := p.Columns[i]
+		for j := 0; j < p.MaxRow; j++ {
+			rolname := p.Rows[j]
+
+			v := p.getValueInner(j, i)
+			fmt.Printf("[%s, %s]:%s\n", rolname, colname, v)
+		}
+	}
 }
