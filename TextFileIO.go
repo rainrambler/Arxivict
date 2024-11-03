@@ -30,6 +30,25 @@ func ReadLines(fullpath string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
+func ReadLinesInLargeFile(filename string) ([]string, error) {
+	readFile, err := os.Open(filename)
+
+	if err != nil {
+		//log.Printf("Cannot read file %s: %v\n", filename, err)
+		return []string{}, err
+	}
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	var fileLines []string
+
+	for fileScanner.Scan() {
+		fileLines = append(fileLines, fileScanner.Text())
+	}
+
+	readFile.Close()
+	return fileLines, nil
+}
+
 // WriteLines - each line should NOT end with \n or \r\n
 func WriteLines(lines []string, fullpath string) error {
 	f, err := os.Create(fullpath)
