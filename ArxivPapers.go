@@ -114,33 +114,6 @@ func (p *ArxivPapers) ParseLargeFileByLine(filename string) {
 	log.Printf("INFO: Total %d lines.\n", totallines)
 }
 
-func (p *ArxivPapers) ParseLargeFile(filename string) {
-	p.Init()
-
-	lines, err := ReadLinesLarge(filename)
-	if err != nil {
-		log.Printf("Err: Cannot read file %s: %v\n", filename, err)
-		return
-	}
-
-	log.Printf("INFO: Total %d lines.\n", len(lines))
-
-	for row, line := range lines {
-		content, err := parseLine(line)
-		if err != nil {
-			log.Printf("Err: Cannot read line %d %s: %v\n", row+1,
-				line, err)
-		}
-
-		paper := convPaper(content.Data)
-		if paper != nil {
-			p.AddPaperMeta(paper)
-		} else {
-			log.Printf("INFO: Cannot convert paper on line: %d\n", row+1)
-		}
-	}
-}
-
 // https://www.golinuxcloud.com/golang-json-unmarshal/
 func (p *ArxivPapers) ReadFile(filename string) {
 	p.Init()
