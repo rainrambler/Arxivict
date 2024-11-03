@@ -92,7 +92,6 @@ func (p *ArxivPapers) ParseLargeFileByLine(filename string) {
 
 	totallines := 0
 	for scanner.Scan() {
-		//lines = append(lines, scanner.Text())
 		line := scanner.Text()
 
 		content, err := parseLine(line)
@@ -103,7 +102,7 @@ func (p *ArxivPapers) ParseLargeFileByLine(filename string) {
 
 		paper := convPaper(content.Data)
 		if paper != nil {
-			p.AddPaperMeta(paper)
+			p.addPaperMeta(paper)
 		} else {
 			log.Printf("INFO: Cannot convert paper on line: %d\n", totallines+1)
 		}
@@ -114,32 +113,7 @@ func (p *ArxivPapers) ParseLargeFileByLine(filename string) {
 	log.Printf("INFO: Total %d lines.\n", totallines)
 }
 
-// https://www.golinuxcloud.com/golang-json-unmarshal/
-func (p *ArxivPapers) ReadFile(filename string) {
-	p.Init()
-
-	js, err := parseFile(filename)
-	if err != nil {
-		log.Printf("[WARN]Cannot open file: %s: %v\n", filename, err)
-		return
-	}
-
-	p.convert(js)
-}
-
-// Convert json content to papers
-func (p *ArxivPapers) convert(jc *JsonContent) {
-	content := jc.Data
-	arr := content.([]interface{})
-	for _, v := range arr {
-		paper := convPaper(v)
-		if paper != nil {
-			p.AddPaperMeta(paper)
-		}
-	}
-}
-
-func (p *ArxivPapers) AddPaperMeta(paper *ArxivPaper) {
+func (p *ArxivPapers) addPaperMeta(paper *ArxivPaper) {
 	if paper == nil {
 		return
 	}
