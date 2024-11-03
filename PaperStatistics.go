@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 	"time"
 )
@@ -83,6 +84,25 @@ func (p *PaperStatistics) PrintResult() {
 	log.Printf("Total %d papers.\n", total)
 }
 
+func (p *PaperStatistics) ToHtmlChart(desiredcates []string) {
+	var ar Archives
+	ar.Init()
+
+	total := 0
+	for _, cate := range desiredcates {
+		ys := p.cate2years[cate]
+
+		if ys == nil {
+			log.Printf("INFO: Cannot find category: %s\n", cate)
+			continue
+		}
+
+		//year2count := ys.GetResult()
+	}
+
+	log.Printf("Total %d papers.\n", total)
+}
+
 func SortPrintYear(m map[int]int) {
 	PrintSortedMapByKey("year", m)
 }
@@ -113,6 +133,26 @@ func (p *YearPapers) GetResult() map[int]int {
 	}
 
 	return year2num
+}
+
+func (p *YearPapers) GetMinMax() (int, int) {
+	keys := make([]int, 0, len(p.year2papers))
+
+	for k := range p.year2papers {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
+	return keys[0], keys[len(keys)-1]
+}
+
+func (p *YearPapers) GetCount(year int) int {
+	ps, exists := p.year2papers[year]
+	if !exists {
+		return 0
+	}
+
+	return ps.Count()
 }
 
 func (p *YearPapers) CountPapers() int {
