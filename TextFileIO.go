@@ -20,9 +20,25 @@ func ReadLines(fullpath string) ([]string, error) {
 
 	var lines []string
 	scanner := bufio.NewScanner(f)
-	//scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, scanner.Err()
+}
 
-	//scanner.SetMaxTokenSize(10240)
+// ReadLines reads a whole file into memory and returns a slice of its lines
+// for whole file as a string, use ioutil.ReadFile instead.
+func ReadLinesLarge(fullpath string) ([]string, error) {
+	f, err := os.Open(fullpath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var lines []string
+	buf := []byte{}
+	scanner := bufio.NewScanner(f)
+	scanner.Buffer(buf, 1024*1024)
 
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
@@ -31,6 +47,25 @@ func ReadLines(fullpath string) ([]string, error) {
 }
 
 func ReadLinesInLargeFile(filename string) ([]string, error) {
+	readFile, err := os.Open(filename)
+
+	if err != nil {
+		//log.Printf("Cannot read file %s: %v\n", filename, err)
+		return []string{}, err
+	}
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	var fileLines []string
+
+	for fileScanner.Scan() {
+		fileLines = append(fileLines, fileScanner.Text())
+	}
+
+	readFile.Close()
+	return fileLines, nil
+}
+
+func ReadLinesInLargeFile2(filename string) ([]string, error) {
 	readFile, err := os.Open(filename)
 
 	if err != nil {
