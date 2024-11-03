@@ -108,6 +108,14 @@ func (p *PaperStatistics) ToHtmlChart(desiredcates []string) {
 		}
 	}
 
+	p.ToHtmlChartPeriod(desiredcates, yearmin, yearmax)
+}
+
+func (p *PaperStatistics) ToHtmlChartPeriod(desiredcates []string,
+	yearmin, yearmax int) {
+	var ar Archives
+	ar.Init()
+
 	var mt Matrix
 	mt.Init()
 
@@ -130,7 +138,6 @@ func (p *PaperStatistics) ToHtmlChart(desiredcates []string) {
 		}
 	}
 
-	//mt.PrintDesc()
 	mt.ToChart()
 }
 
