@@ -130,19 +130,15 @@ func (p *Matrix) convSeries() []interface{} {
 
 		varr := []int{}
 		for j := 0; j < p.MaxRow; j++ {
-			//rolname := p.Rows[j]
-
 			v := p.getValueInner(j, i)
 
 			vint, _ := strconv.Atoi(v)
 			varr = append(varr, vint)
-			//fmt.Printf("[%s, %s]:%s\n", rolname, colname, v)
 		}
 
 		series1 := map[string]interface{}{
 			"name": colname,
 			"type": "line",
-			//"stack": "Total",
 			"data": ArrToJsonStr(varr),
 		}
 
@@ -202,25 +198,6 @@ func (p *Matrix) ToChart() {
 	data["series"] = p.convSeries()
 
 	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		fmt.Printf("could not marshal json: %s\n", err)
-		return
-	}
-
-	fmt.Printf("json data: %s\n", jsonData)
-}
-
-func (p *Matrix) ToChartDemo() {
-	data := map[string]interface{}{
-		"intValue":    1234,
-		"boolValue":   true,
-		"stringValue": "hello!",
-		"objectValue": map[string]interface{}{
-			"arrayValue": []int{1, 2, 3, 4},
-		},
-	}
-
-	jsonData, err := json.Marshal(data)
 	if err != nil {
 		fmt.Printf("could not marshal json: %s\n", err)
 		return
