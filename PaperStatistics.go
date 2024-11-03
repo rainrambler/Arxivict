@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -29,12 +30,11 @@ func (p *PaperStatistics) AddOnePaper(ap *ArxivPaper) {
 
 	t, err := time.Parse(YYYYMMDD, ap.updatedate)
 	if err != nil {
-		log.Fatal("Cannot convert time %s: %v", ap.updatedate, err)
+		log.Printf("ERR: Cannot convert time %s: %v", ap.updatedate, err)
 		return
 	}
 
 	dt := t.Year()
-	//p.AddPaper(dt, ap.title, ap.categories)
 
 	arr := strings.Split(ap.categories, " ")
 	for _, cate := range arr {
@@ -88,7 +88,8 @@ func (p *PaperStatistics) ToHtmlChart(desiredcates []string) {
 	var ar Archives
 	ar.Init()
 
-	total := 0
+	yearmin := 3000
+	yearmax := 0
 	for _, cate := range desiredcates {
 		ys := p.cate2years[cate]
 
@@ -97,10 +98,47 @@ func (p *PaperStatistics) ToHtmlChart(desiredcates []string) {
 			continue
 		}
 
-		//year2count := ys.GetResult()
+		curmin, curmax := ys.GetMinMax()
+		if yearmin > curmin {
+			yearmin = curmin
+		}
+
+		if yearmax < curmax {
+			yearmax = curmax
+		}
 	}
 
-	log.Printf("Total %d papers.\n", total)
+	var mt Matrix
+	mt.Init()
+
+	years := GetYears(yearmin, yearmax)
+	mt.SetRows(years)
+	mt.SetColumns(desiredcates)
+
+	for _, cate := range desiredcates {
+		ys := p.cate2years[cate]
+
+		if ys == nil {
+			log.Printf("INFO: Cannot find category 2: %s\n", cate)
+			continue
+		}
+
+		for y := yearmin; y <= yearmax; y++ {
+			papercount := ys.GetCount(y)
+
+			mt.SetValue(strconv.Itoa(y), cate, strconv.Itoa(papercount))
+		}
+	}
+
+	mt.PrintDesc()
+}
+
+func GetYears(yearmin, yearmax int) []string {
+	years := []string{}
+	for y := yearmin; y <= yearmax; y++ {
+		years = append(years, strconv.Itoa(y))
+	}
+	return years
 }
 
 func SortPrintYear(m map[int]int) {
