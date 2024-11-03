@@ -325,7 +325,7 @@ func getCategory(subcategory string) string {
 	}
 
 	arr := strings.Split(subcategory, ".")
-	return arr[0]
+	return arr[0] + "]"
 }
 
 func isValidCategory(catname string) bool {
