@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -32,7 +33,18 @@ func (p *PaperStatistics) AddOnePaper(ap *ArxivPaper) {
 	}
 
 	dt := t.Year()
-	p.AddPaper(dt, ap.title, ap.categories)
+	//p.AddPaper(dt, ap.title, ap.categories)
+
+	arr := strings.Split(ap.categories, " ")
+	for _, cate := range arr {
+		cate1 := strings.Trim(cate, " \t")
+		if cate1 != "" {
+			p.AddPaper(dt, ap.title, cate1)
+		} else {
+			log.Printf("INFO: Cannot parse categories %s for %s\n",
+				ap.categories, ap.title)
+		}
+	}
 }
 
 func (p *PaperStatistics) AddPaper(year int, title, cate string) {
@@ -49,12 +61,26 @@ func (p *PaperStatistics) AddPaper(year int, title, cate string) {
 }
 
 func (p *PaperStatistics) PrintResult() {
-	for cate, years := range p.cate2years {
-		fmt.Printf("Category: %s\n", cate)
+	var ar Archives
+	ar.Init()
 
+	total := 0
+	for cate, years := range p.cate2years {
+		catedesc, exists := ar.Find(cate)
 		m := years.GetResult()
+		cnt := years.CountPapers()
+		total += cnt
+		if exists {
+			fmt.Printf("Category [%s]: %s, %d papers\n",
+				cate, catedesc.name, cnt)
+		} else {
+			fmt.Printf("Category: %s, %d papers\n",
+				cate, cnt)
+		}
 		SortPrintYear(m)
 	}
+
+	log.Printf("Total %d papers.\n", total)
 }
 
 func SortPrintYear(m map[int]int) {
@@ -87,6 +113,14 @@ func (p *YearPapers) GetResult() map[int]int {
 	}
 
 	return year2num
+}
+
+func (p *YearPapers) CountPapers() int {
+	num := 0
+	for _, paper := range p.year2papers {
+		num += paper.Count()
+	}
+	return num
 }
 
 type Papers struct {
