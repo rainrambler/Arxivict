@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 )
 
 type Matrix struct {
@@ -121,9 +122,54 @@ func (p *Matrix) PrintDesc() {
 	}
 }
 
+func (p *Matrix) convSeries() []interface{} {
+	all := []interface{}{}
+
+	for i := 0; i < p.MaxCol; i++ {
+		colname := p.Columns[i]
+
+		varr := []int{}
+		for j := 0; j < p.MaxRow; j++ {
+			//rolname := p.Rows[j]
+
+			v := p.getValueInner(j, i)
+
+			vint, _ := strconv.Atoi(v)
+			varr = append(varr, vint)
+			//fmt.Printf("[%s, %s]:%s\n", rolname, colname, v)
+		}
+
+		series1 := map[string]interface{}{
+			"name": colname,
+			"type": "line",
+			//"stack": "Total",
+			"data": ArrToJsonStr(varr),
+		}
+
+		all = append(all, series1)
+	}
+
+	return all
+}
+
+func ArrToJsonStr(arr []int) string {
+	la := len(arr)
+	if la == 0 {
+		return "[]"
+	} else if la == 1 {
+		return fmt.Sprintf("[%d]", arr[0])
+	}
+
+	s := "["
+	for i := 0; i < la-1; i++ {
+		s += strconv.Itoa(arr[i]) + ", "
+	}
+
+	s += strconv.Itoa(arr[la-1]) + "]" // last item
+	return s
+}
+
 func (p *Matrix) ToChart() {
-	//rowsstr := fmt.Sprintf("%+v", p.Rows)
-	//colsstr := fmt.Sprintf("%+v", p.Columns)
 
 	data := map[string]interface{}{
 		"title": map[string]interface{}{
@@ -133,7 +179,7 @@ func (p *Matrix) ToChart() {
 			"trigger": "axis",
 		},
 		"legend": map[string]interface{}{
-			"data": p.Rows,
+			"data": p.Columns,
 		},
 		"grid": map[string]interface{}{
 			"left":         "3%",
@@ -144,7 +190,7 @@ func (p *Matrix) ToChart() {
 		"xAxis": map[string]interface{}{
 			"type":        "category",
 			"boundaryGap": false,
-			"data":        p.Columns,
+			"data":        p.Rows,
 		},
 		"yAxis": map[string]interface{}{
 			"type": "value",
@@ -153,19 +199,7 @@ func (p *Matrix) ToChart() {
 		"series": []interface{}{},
 	}
 
-	series1 := map[string]interface{}{
-		"name":  "Email",
-		"type":  "line",
-		"stack": "Total",
-		"data":  "[120, 132, 101, 134, 90, 230, 210]",
-	}
-
-	seriesarr := data["series"].([]interface{})
-
-	seriesarr = append(seriesarr, series1)
-	seriesarr = append(seriesarr, series1)
-
-	data["series"] = seriesarr
+	data["series"] = p.convSeries()
 
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
