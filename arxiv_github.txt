@@ -1,0 +1,5 @@
+https://arxiv.github.io/arxiv-base/arxiv/arxiv.taxonomy.category.html
+
+arxiv_category_archive.json
+arxiv_category_category.json
+arxiv_category_group.json
