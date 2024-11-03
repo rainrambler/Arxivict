@@ -130,7 +130,8 @@ func (p *PaperStatistics) ToHtmlChart(desiredcates []string) {
 		}
 	}
 
-	mt.PrintDesc()
+	//mt.PrintDesc()
+	mt.ToChart()
 }
 
 func GetYears(yearmin, yearmax int) []string {
