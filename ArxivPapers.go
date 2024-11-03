@@ -77,7 +77,7 @@ func (p *ArxivPapers) Init() {
 func (p *ArxivPapers) ParseLargeFile(filename string) {
 	p.Init()
 
-	lines, err := ReadLines(filename)
+	lines, err := ReadLinesInLargeFile(filename)
 	if err != nil {
 		log.Printf("Err: Cannot read file %s: %v\n", filename, err)
 		return
@@ -90,9 +90,11 @@ func (p *ArxivPapers) ParseLargeFile(filename string) {
 				line, err)
 		}
 
-		paper := convPaper(content)
+		paper := convPaper(content.Data)
 		if paper != nil {
 			p.AddPaperMeta(paper)
+		} else {
+			log.Printf("INFO: Cannot convert paper on line: %d\n", row+1)
 		}
 	}
 }
