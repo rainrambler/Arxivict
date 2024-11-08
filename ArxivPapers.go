@@ -62,6 +62,7 @@ type ArxivPapers struct {
 	subctg2count   map[string]int
 	license2count  map[string]int
 	key2count      map[string]int
+	desiredCates   map[string]int
 
 	stat *PaperStatistics
 }
@@ -71,9 +72,27 @@ func (p *ArxivPapers) Init() {
 	p.subctg2count = make(map[string]int)
 	p.license2count = make(map[string]int)
 	p.key2count = make(map[string]int)
+	p.desiredCates = make(map[string]int)
 
 	p.stat = new(PaperStatistics)
 	p.stat.Init()
+}
+
+func (p *ArxivPapers) SetCategories(cates []string) {
+	p.desiredCates = make(map[string]int)
+
+	for _, c := range cates {
+		p.desiredCates[c] = 1
+	}
+}
+
+func (p *ArxivPapers) IsInCategories(cate string) bool {
+	if len(p.category2count) == 0 {
+		// No setting
+		return true
+	}
+	_, exists := p.category2count[cate]
+	return exists
 }
 
 func (p *ArxivPapers) ParseLargeFileByLine(filename string) {
@@ -117,29 +136,40 @@ func (p *ArxivPapers) addPaperMeta(paper *ArxivPaper) {
 	if paper == nil {
 		return
 	}
+	foundInCates := false
 	allcats := strings.Split(paper.categories, " ")
 	for _, oneCat := range allcats {
 		p.subctg2count[oneCat] = p.subctg2count[oneCat] + 1
 
 		parent := getCategory(oneCat)
 		p.category2count[parent] = p.category2count[parent] + 1
+
+		if !foundInCates && p.IsInCategories(oneCat) {
+			foundInCates = true
+		}
 	}
 
 	p.license2count[paper.license] = p.license2count[paper.license] + 1
 
+	p.stat.AddOnePaper(paper)
+
+	if !foundInCates {
+		return
+	}
+
+	// analyse keywords
 	arr := strings.Split(paper.title, " ")
 	for _, key := range arr {
-		keynew := PurifyKey(key)
+		keynew := PurifyKeyword(key)
 		if len(keynew) > 0 {
 			p.key2count[keynew] = p.key2count[keynew] + 1
 		}
 	}
 
-	p.stat.AddOnePaper(paper)
 }
 
-func PurifyKey(s string) string {
-	sn := strings.Trim(s, " \t\r\n")
+func PurifyKeyword(s string) string {
+	sn := strings.Trim(s, " \t\r\n,.\\")
 	return strings.ToLower(sn)
 }
 
@@ -289,4 +319,11 @@ func (p *ArxivPapers) PrintItems() {
 	for _, item := range p.items {
 		log.Printf("%v\n", item)
 	}
+}
+
+func (p *ArxivPapers) GenWordCloud(filename, category string) {
+	var wc WordCloud
+	wc.word2count = p.key2count
+
+	wc.SaveOneFile("Arxiv")
 }
