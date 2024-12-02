@@ -106,8 +106,6 @@ func (p *ArxivPapers) IsInCategories(cate string) bool {
 }
 
 func (p *ArxivPapers) ParseLargeFileByLine(filename string) {
-	p.Init()
-
 	f, err := os.Open(filename)
 	if err != nil {
 		log.Printf("Err: Cannot read file %s: %v\n", filename, err)
@@ -180,14 +178,17 @@ func (p *ArxivPapers) addPaperMeta(paper *ArxivPaper) {
 	}
 
 	// analyse keywords
-	arr := strings.Split(paper.title, " ")
+	arr := strings.FieldsFunc(paper.title, SplitFunc)
 	for _, key := range arr {
 		keynew := PurifyKeyword(key)
 		if len(keynew) > 0 {
 			p.key2count[keynew] = p.key2count[keynew] + 1
 		}
 	}
+}
 
+func SplitFunc(r rune) bool {
+	return r == ' ' || r == '\t' || (r == '-')
 }
 
 func PurifyKeyword(s string) string {
@@ -324,7 +325,8 @@ func getCategory(subcategory string) string {
 	}
 
 	arr := strings.Split(subcategory, ".")
-	return arr[0] + "]"
+	//return arr[0] + "]"
+	return arr[0]
 }
 
 func isValidCategory(catname string) bool {
@@ -344,8 +346,12 @@ func (p *ArxivPapers) PrintItems() {
 }
 
 func (p *ArxivPapers) GenWordCloud(filename, category string) {
+	//PrintMapByValueTop(p.key2count, -1)
+	desiredMargin := FindDesiredMargin(p.key2count, 200)
+	log.Printf("INFO: Set Margin to %d.\n", desiredMargin)
+
 	var wc WordCloud
 	wc.AddWords(p.key2count)
 
-	wc.SaveMultiFiles("Arxiv")
+	wc.SaveOptimizedFile("Arxiv", desiredMargin)
 }
