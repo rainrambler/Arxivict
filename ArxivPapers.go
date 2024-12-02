@@ -323,7 +323,7 @@ func (p *ArxivPapers) PrintItems() {
 
 func (p *ArxivPapers) GenWordCloud(filename, category string) {
 	var wc WordCloud
-	wc.word2count = p.key2count
+	wc.AddWords(p.key2count)
 
 	wc.SaveOneFile("Arxiv")
 }
