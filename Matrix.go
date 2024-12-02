@@ -167,7 +167,6 @@ func ArrToJsonStr(arr []int) string {
 }
 
 func (p *Matrix) ToChart() {
-
 	data := map[string]interface{}{
 		"title": map[string]interface{}{
 			"text": "Arxiv Statistics",
