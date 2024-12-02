@@ -325,5 +325,5 @@ func (p *ArxivPapers) GenWordCloud(filename, category string) {
 	var wc WordCloud
 	wc.AddWords(p.key2count)
 
-	wc.SaveOneFile("Arxiv")
+	wc.SaveMultiFiles("Arxiv")
 }
