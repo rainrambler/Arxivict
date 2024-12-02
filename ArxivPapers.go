@@ -84,6 +84,16 @@ func (p *ArxivPapers) SetCategories(cates []string) {
 	for _, c := range cates {
 		p.desiredCates[c] = 1
 	}
+	log.Printf("INFO: Set desired categories: %+v\n", cates)
+}
+
+func (p *ArxivPapers) isDesired(cate string) bool {
+	if len(p.desiredCates) == 0 {
+		return true
+	}
+
+	_, exists := p.desiredCates[cate]
+	return exists
 }
 
 func (p *ArxivPapers) IsInCategories(cate string) bool {
@@ -137,6 +147,7 @@ func (p *ArxivPapers) addPaperMeta(paper *ArxivPaper) {
 		return
 	}
 	foundInCates := false
+	isDesiredCate := false
 	allcats := strings.Split(paper.categories, " ")
 	for _, oneCat := range allcats {
 		p.subctg2count[oneCat] = p.subctg2count[oneCat] + 1
@@ -147,6 +158,12 @@ func (p *ArxivPapers) addPaperMeta(paper *ArxivPaper) {
 		if !foundInCates && p.IsInCategories(oneCat) {
 			foundInCates = true
 		}
+
+		if !isDesiredCate {
+			if p.isDesired(oneCat) {
+				isDesiredCate = true
+			}
+		}
 	}
 
 	p.license2count[paper.license] = p.license2count[paper.license] + 1
@@ -154,6 +171,11 @@ func (p *ArxivPapers) addPaperMeta(paper *ArxivPaper) {
 	p.stat.AddOnePaper(paper)
 
 	if !foundInCates {
+		return
+	}
+
+	if !isDesiredCate {
+		//log.Printf("DBG: Cates [%s] filtered.\n", paper.categories)
 		return
 	}
 
