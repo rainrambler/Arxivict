@@ -20,6 +20,7 @@ func SumKeywordsInTitle(filename string) {
 
 func CreateWordCloud(filename, category string) {
 	var ap ArxivPapers
+	ap.Init()
 	ap.SetCategories([]string{category})
 	ap.ParseLargeFileByLine(filename)
 	ap.GenWordCloud(filename, category)
