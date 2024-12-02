@@ -1,6 +1,6 @@
-# Dict(ionary) for All Arxiv Papers
+# Arxivict: Arxiv-(D)-ict, A Dictionary for All Arxiv Papers
 
-Generate line chart for selected categories and periods.
+Generate line chart and word cloud chart for selected categories and periods.
 
 # Screenshot
 
