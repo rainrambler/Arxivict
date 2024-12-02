@@ -2,30 +2,40 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
 
 type WordCloud struct {
-	char2count map[string]int
 	word2count map[string]int
+	filtered   map[string]int // Key: words that should be filtered. e.g. "the"
 }
 
 func (p *WordCloud) InitParams() {
-	p.char2count = make(map[string]int)
 	p.word2count = make(map[string]int)
+	p.filtered = make(map[string]int)
 }
 
-func (p *WordCloud) parseSentence(line string) {
-	rs := []rune(line)
-	for _, r := range rs {
-		p.AddChar(r)
+func (p *WordCloud) loadConfig(filename string) {
+	arr, err := ReadLines(filename)
+	if err != nil {
+		log.Printf("WARN: Cannot read file %s: %v\n", filename, err)
+		return
 	}
 
-	rcount := len(rs)
-	for i := 0; i < rcount-1; i++ {
-		pair := rs[i : i+2]
-		p.AddWord(string(pair))
+	for _, item := range arr {
+		if len(item) > 0 {
+			p.filtered[item] = 1
+		}
 	}
+}
+
+func (p *WordCloud) shouldFilter(enword string) bool {
+	if len(enword) == 0 {
+		return true
+	}
+	_, exists := p.filtered[enword]
+	return exists
 }
 
 func (p *WordCloud) parseSentenceEn(line string) {
@@ -39,13 +49,22 @@ func (p *WordCloud) parseSentenceEn(line string) {
 	}
 }
 
-func (p *WordCloud) AddChar(r rune) {
-	s := string(r)
-	p.char2count[s] = p.char2count[s] + 1
+func (p *WordCloud) AddWord(s string) {
+	if p.shouldFilter(s) {
+		return
+	}
+	p.word2count[s] = p.word2count[s] + 1
 }
 
-func (p *WordCloud) AddWord(s string) {
-	p.word2count[s] = p.word2count[s] + 1
+func (p *WordCloud) AddWords(s2c map[string]int) {
+	p.InitParams()
+	p.loadConfig(`EnCommonWords.txt`)
+
+	for k, v := range s2c {
+		if !p.shouldFilter(k) {
+			p.word2count[k] = v
+		}
+	}
 }
 
 // Print Top N values (sorted by value), -1 means all
