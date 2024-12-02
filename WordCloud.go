@@ -87,6 +87,9 @@ func ConvertJsonHardCode(s2c map[string]int, margin int) string {
 		}
 	}
 
+	if s == "" {
+		return ""
+	}
 	s = s[:len(s)-1] // remove last comma
 	s = "[" + s + "]"
 	return s
@@ -107,7 +110,7 @@ func (p *WordCloud) SaveFile(filename string) {
 	}
 }
 
-const KEY_MARGIN = 500
+const KEY_MARGIN = 10
 
 func (p *WordCloud) SaveOneFile(filename string) {
 	tmpl, err := ReadTextFile(`./doc/wordcloudtempl.html`)
@@ -127,6 +130,11 @@ func (p *WordCloud) SaveMultiFiles(filepartname string) {
 	tmpl, err := ReadTextFile(`./doc/wordcloudtempl.html`)
 	if err != nil {
 		fmt.Println("Cannot read template file!")
+		return
+	}
+
+	if len(p.word2count) == 0 {
+		log.Printf("INFO: No results for %s!\n", filepartname)
 		return
 	}
 
