@@ -101,3 +101,29 @@ func PrintMapGroupByValue(m map[string]int) {
 
 	PrintSortedMapByValueInt(v2count)
 }
+
+func FindDesiredMargin(m map[string]int, wanted int) int {
+	type kv struct {
+		Key   string
+		Value int
+	}
+
+	var ss []kv
+	for k, v := range m {
+		ss = append(ss, kv{k, v})
+	}
+
+	sort.Slice(ss, func(i, j int) bool {
+		return ss[i].Value > ss[j].Value
+	})
+
+	curcount := 0
+	for _, kv := range ss {
+		if curcount >= wanted {
+			return kv.Value
+		}
+		curcount++
+		//fmt.Printf("%s:%d\n", kv.Key, kv.Value)
+	}
+	return curcount
+}
