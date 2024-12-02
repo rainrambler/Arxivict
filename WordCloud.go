@@ -107,7 +107,7 @@ func (p *WordCloud) SaveFile(filename string) {
 	}
 }
 
-const KEY_MARGIN = 1000
+const KEY_MARGIN = 500
 
 func (p *WordCloud) SaveOneFile(filename string) {
 	tmpl, err := ReadTextFile(`./doc/wordcloudtempl.html`)
@@ -116,9 +116,25 @@ func (p *WordCloud) SaveOneFile(filename string) {
 		return
 	}
 
-	i := KEY_MARGIN
+	i := KEY_MARGIN * 2
 	s := ConvertJsonHardCode(p.word2count, i)
 	content := strings.Replace(tmpl, `[$REALDATA$]`, s, 1)
 	fullfname := fmt.Sprintf("%s_2_%d.html", filename, i)
 	WriteTextFile(fullfname, content)
+}
+
+func (p *WordCloud) SaveMultiFiles(filepartname string) {
+	tmpl, err := ReadTextFile(`./doc/wordcloudtempl.html`)
+	if err != nil {
+		fmt.Println("Cannot read template file!")
+		return
+	}
+
+	for k := 1; k < 6; k++ {
+		i := KEY_MARGIN * k
+		s := ConvertJsonHardCode(p.word2count, i)
+		content := strings.Replace(tmpl, `[$REALDATA$]`, s, 1)
+		fullfname := fmt.Sprintf("%s_2_%d.html", filepartname, i)
+		WriteTextFile(fullfname, content)
+	}
 }
